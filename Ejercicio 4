@@ -1,1 +1,95 @@
+import java.util.NoSuchElementException;
 
+public class RegistroEstudiantes {
+
+    private String[] estudiantes;
+    private int cantidad;
+
+    public RegistroEstudiantes(int capacidad) {
+
+        if (capacidad <= 0) {
+            throw new IllegalArgumentException(
+                "La capacidad debe ser mayor que cero."
+            );
+        }
+
+        estudiantes = new String[capacidad];
+        cantidad = 0;
+    }
+
+    public void agregarEstudiante(String nombre) {
+
+        if (nombre == null || nombre.trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                "El nombre no puede ser nulo o vacío."
+            );
+        }
+
+        if (cantidad >= estudiantes.length) {
+            throw new IllegalStateException(
+                "El registro está lleno."
+            );
+        }
+
+        estudiantes[cantidad] = nombre;
+        cantidad++;
+
+        System.out.println(
+            "Estudiante agregado: " + nombre
+        );
+    }
+
+    public String buscarEstudiante(String nombre) {
+
+        if (nombre == null || nombre.trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                "El nombre no puede ser nulo o vacío."
+            );
+        }
+
+        for (int i = 0; i < cantidad; i++) {
+
+            if (estudiantes[i].equalsIgnoreCase(nombre)) {
+                return estudiantes[i];
+            }
+        }
+
+        throw new NoSuchElementException(
+            "El estudiante no se encuentra registrado."
+        );
+    }
+
+    public static void main(String[] args) {
+
+        RegistroEstudiantes registro =
+            new RegistroEstudiantes(3);
+
+        try {
+
+            registro.agregarEstudiante("Leonardo");
+            registro.agregarEstudiante("Carlos");
+
+            System.out.println(
+                "Encontrado: " +
+                registro.buscarEstudiante("Leonardo")
+            );
+
+            System.out.println(
+                "Encontrado: " +
+                registro.buscarEstudiante("Pedro")
+            );
+
+        } catch (IllegalArgumentException e) {
+
+            System.out.println(
+                "Error de argumento: " + e.getMessage()
+            );
+
+        } catch (NoSuchElementException e) {
+
+            System.out.println(
+                "Error de búsqueda: " + e.getMessage()
+            );
+        }
+    }
+}
