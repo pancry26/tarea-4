@@ -1,1 +1,104 @@
+public class Main
+{
+    static class SaldoInsuficienteException extends Exception {
+        public SaldoInsuficienteException(String mensaje) {
+            super(mensaje);
+        }
+    }
+    static class CuentaBancaria {
+        private String numeroCuenta;
+        private String titular;
+        private double saldo;
+        public CuentaBancaria(
+                String numeroCuenta,
+                String titular,
+                double saldoInicial) {
+            if (saldoInicial < 0) {
+                throw new IllegalArgumentException(
+                    "El saldo inicial no puede ser negativo."
+                );
+            }
+            this.numeroCuenta = numeroCuenta;
+            this.titular = titular;
+            this.saldo = saldoInicial;
+        }
+        public void depositar(double monto) {
+            if (monto <= 0) {
+                throw new IllegalArgumentException(
+                    "El monto del depósito debe ser positivo."
+                );
+            }
+            saldo += monto;
+            System.out.println(
+                "Depósito realizado correctamente."
+            );
+        }
+        public void retirar(double monto)
+                throws SaldoInsuficienteException {
+            if (monto <= 0) {
+                throw new IllegalArgumentException(
+                    "El monto del retiro debe ser positivo."
+                );
+            }
+            if (monto > saldo) {
+                throw new SaldoInsuficienteException(
+                    "Saldo insuficiente para realizar el retiro."
+                );
+            }
+            saldo -= monto;
+            System.out.println(
+                "Retiro realizado correctamente."
+            );
+        }
+        public double getSaldo() {
+            return saldo;
+        }
+        public String getNumeroCuenta() {
+            return numeroCuenta;
+        }
+        public String getTitular() {
+            return titular;
+        }
+    }
+    public static void main(String[] args) {
+        try {
+            CuentaBancaria cuenta =
+                new CuentaBancaria(
+                    "001",
+                    "Leonardo",
+                    1000
+                );
+            System.out.println(
+                "Cuenta creada correctamente."
+            );
+            System.out.println(
+                "Titular: " + cuenta.getTitular()
+            );
+            System.out.println(
+                "Saldo inicial: S/ " + cuenta.getSaldo()
+            );
+            cuenta.depositar(500);
+            System.out.println(
+                "Saldo después del depósito: S/ "
+                + cuenta.getSaldo()
+            );
+            cuenta.retirar(300);
+            System.out.println(
+                "Saldo después del retiro: S/ "
+                + cuenta.getSaldo()
+            );
+            cuenta.retirar(2000);
+        } catch (IllegalArgumentException e) {
+            System.out.println(
+                "Error de validación: "
+                + e.getMessage()
+            );
+        } catch (SaldoInsuficienteException e) {
 
+            System.out.println(
+                "Error de saldo: "
+                + e.getMessage()
+            );
+        }
+    }
+}
