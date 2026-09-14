@@ -1,1 +1,167 @@
-
+public class Main{
+    static class SaldoInsuficienteException
+            extends Exception {
+        public SaldoInsuficienteException(String mensaje) {
+            super(mensaje);
+        }
+    }
+    static class LimiteCreditoExcedidoException
+            extends SaldoInsuficienteException {
+        public LimiteCreditoExcedidoException(
+                String mensaje) {
+            super(mensaje);
+        }
+    }
+    static class CuentaBancaria {
+        protected String numeroCuenta;
+        protected String titular;
+        protected double saldo;
+        public CuentaBancaria(
+                String numeroCuenta,
+                String titular,
+                double saldoInicial) {
+            if (saldoInicial < 0) {
+                throw new IllegalArgumentException(
+                    "El saldo inicial no puede ser negativo."
+                );
+            }
+            this.numeroCuenta = numeroCuenta;
+            this.titular = titular;
+            this.saldo = saldoInicial;
+        }
+        public void retirar(double monto)
+                throws SaldoInsuficienteException {
+            if (monto <= 0) {
+                throw new IllegalArgumentException(
+                    "El monto debe ser positivo."
+                );
+            }
+            if (monto > saldo) {
+                throw new SaldoInsuficienteException(
+                    "Saldo insuficiente."
+                );
+            }
+            saldo -= monto;
+        }
+        public double getSaldo() {
+            return saldo;
+        }
+    }
+    static class CuentaCredito
+            extends CuentaBancaria {
+        private double limiteCredito;
+        public CuentaCredito(
+                String numeroCuenta,
+                String titular,
+                double saldoInicial,
+                double limiteCredito) {
+            super(
+                numeroCuenta,
+                titular,
+                saldoInicial
+            );
+            if (limiteCredito < 0) {
+                throw new IllegalArgumentException(
+                    "El límite de crédito no puede ser negativo."
+                );
+            }
+            this.limiteCredito = limiteCredito;
+        }
+        @Override
+        public void retirar(double monto)
+                throws SaldoInsuficienteException {
+            if (monto <= 0) {
+                throw new IllegalArgumentException(
+                    "El monto debe ser positivo."
+                );
+            }
+            double disponible =
+                saldo + limiteCredito;
+            if (monto > disponible) {
+                throw new LimiteCreditoExcedidoException(
+                    "Se superó el límite de crédito disponible."
+                );
+            }
+            saldo -= monto;
+            System.out.println(
+                "Retiro realizado correctamente."
+            );
+        }
+        public void transferir(
+                CuentaBancaria destino,
+                double monto)
+                throws SaldoInsuficienteException {
+            if (destino == null) {
+                throw new IllegalArgumentException(
+                    "La cuenta destino no existe."
+                );
+            }
+            if (monto <= 0) {
+                throw new IllegalArgumentException(
+                    "El monto debe ser positivo."
+                );
+            }
+            double disponible =
+                saldo + limiteCredito;
+            if (monto > disponible) {
+                throw new LimiteCreditoExcedidoException(
+                    "Se superó el límite de crédito."
+                );
+            }
+            saldo -= monto;
+            destino.saldo += monto;
+            System.out.println(
+                "Transferencia realizada correctamente."
+            );
+        }
+        public double getLimiteCredito() {
+            return limiteCredito;
+        }
+    }
+    public static void realizarRetiro(
+            CuentaCredito cuenta,
+            double monto)
+            throws SaldoInsuficienteException {
+        cuenta.retirar(monto);
+    }
+    public static void main(String[] args) {
+        try {
+            CuentaCredito cuenta =
+                new CuentaCredito(
+                    "003",
+                    "Leonardo",
+                    500,
+                    1000
+                );
+            System.out.println(
+                "Saldo inicial: S/ "
+                + cuenta.getSaldo()
+            );
+            System.out.println(
+                "Límite de crédito: S/ "
+                + cuenta.getLimiteCredito()
+            );
+            realizarRetiro(cuenta, 1200);
+            System.out.println(
+                "Saldo después del retiro: S/ "
+                + cuenta.getSaldo()
+            );
+            realizarRetiro(cuenta, 500);
+        } catch (LimiteCreditoExcedidoException e) {
+            System.out.println(
+                "Error de límite: "
+                + e.getMessage()
+            );
+        } catch (SaldoInsuficienteException e) {
+            System.out.println(
+                "Error de saldo: "
+                + e.getMessage()
+            );
+        } catch (IllegalArgumentException e) {
+            System.out.println(
+                "Error de validación: "
+                + e.getMessage()
+            );
+        }
+    }
+}
