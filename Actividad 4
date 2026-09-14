@@ -1,1 +1,205 @@
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+public class Main{
+    static class HistorialVacioException
+            extends Exception {
+        public HistorialVacioException(String mensaje) {
+            super(mensaje);
+        }
+    }
+    static class SaldoInsuficienteException
+            extends Exception {
+        public SaldoInsuficienteException(String mensaje) {
+            super(mensaje);
+        }
+    }
+    static class CuentaBancaria {
+        private String numeroCuenta;
+        private String titular;
+        private double saldo;
+        private List<String> historial;
+        public CuentaBancaria(
+                String numeroCuenta,
+                String titular,
+                double saldoInicial) {
+            if (saldoInicial < 0) {
+                throw new IllegalArgumentException(
+                    "El saldo inicial no puede ser negativo."
+                );
+            }
+            this.numeroCuenta = numeroCuenta;
+            this.titular = titular;
+            this.saldo = saldoInicial;
+            this.historial = new ArrayList<>();
+        }
+        public void depositar(double monto) {
+            if (monto <= 0) {
+                throw new IllegalArgumentException(
+                    "El monto debe ser positivo."
+                );
+            }
+            saldo += monto;
+            historial.add(
+                "Depósito: S/ " + monto
+            );
+        }
+        public void retirar(double monto)
+                throws SaldoInsuficienteException {
+            if (monto <= 0) {
+                throw new IllegalArgumentException(
+                    "El monto debe ser positivo."
+                );
+            }
+            if (monto > saldo) {
+                throw new SaldoInsuficienteException(
+                    "Saldo insuficiente."
+                );
+            }
+            saldo -= monto;
+            historial.add(
+                "Retiro: S/ " + monto
+            );
+        }
+        public String getNumeroCuenta() {
+            return numeroCuenta;
+        }
+        public String getTitular() {
+            return titular;
+        }
+        public double getSaldo() {
+            return saldo;
+        }
+        public List<String> getHistorial() {
+            return historial;
+        }
+    }
+    static class ReporteTransacciones {
+        public static void generarReporte(
+                CuentaBancaria cuenta,
+                String nombreArchivo)
+                throws IOException,
+                       HistorialVacioException {
+            if (cuenta.getHistorial().isEmpty()) {
+                throw new HistorialVacioException(
+                    "No existen transacciones para generar el reporte."
+                );
+            }
+            try (BufferedWriter writer =
+                    new BufferedWriter(
+                        new FileWriter(nombreArchivo))) {
+                writer.write(
+                    "REPORTE DE TRANSACCIONES"
+                );
+                writer.newLine();
+                writer.write(
+                    "=========================="
+                );
+                writer.newLine();
+                writer.write(
+                    "Número de cuenta: "
+                    + cuenta.getNumeroCuenta()
+                );
+                writer.newLine();
+                writer.write(
+                    "Titular: "
+                    + cuenta.getTitular()
+                );
+                writer.newLine();
+                writer.write(
+                    "Saldo actual: S/ "
+                    + cuenta.getSaldo()
+                );
+                writer.newLine();
+                writer.newLine();
+                writer.write(
+                    "HISTORIAL DE TRANSACCIONES"
+                );
+                writer.newLine();
+                for (String movimiento :
+                        cuenta.getHistorial()) {
+                    writer.write(
+                        "- " + movimiento
+                    );
+                    writer.newLine();
+                }
+            }
+        }
+    }
+    public static void leerReporte(
+            String nombreArchivo)
+            throws FileNotFoundException {
+        try (Scanner scanner =
+                new Scanner(
+                    new File(nombreArchivo))) {
+            System.out.println(
+                "\nCONTENIDO DEL REPORTE"
+            );
+            System.out.println(
+                "====================="
+            );
+            while (scanner.hasNextLine()) {
 
+                System.out.println(
+                    scanner.nextLine()
+                );
+            }
+        }
+    }
+    public static void main(String[] args) {
+        String archivo =
+            "reporte_transacciones.txt";
+        try {
+            CuentaBancaria cuenta =
+                new CuentaBancaria(
+                    "001",
+                    "Leonardo",
+                    1000
+                );
+            cuenta.depositar(500);
+            cuenta.retirar(200);
+            System.out.println(
+                "Saldo actual: S/ "
+                + cuenta.getSaldo()
+            );
+            ReporteTransacciones.generarReporte(
+                cuenta,
+                archivo
+            );
+            System.out.println(
+                "\nReporte generado correctamente."
+            );
+            leerReporte(archivo);
+        } catch (HistorialVacioException e) {
+            System.out.println(
+                "Error de historial: "
+                + e.getMessage()
+            );
+        } catch (FileNotFoundException e) {
+            System.out.println(
+                "Archivo no encontrado: "
+                + e.getMessage()
+            );
+        } catch (IOException e) {
+            System.out.println(
+                "Error de archivo: "
+                + e.getMessage()
+            );
+        } catch (SaldoInsuficienteException e) {
+            System.out.println(
+                "Error de saldo: "
+                + e.getMessage()
+            );
+        } catch (IllegalArgumentException e) {
+            System.out.println(
+                "Error de validación: "
+                + e.getMessage()
+            );
+        }
+    }
+}
