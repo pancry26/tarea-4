@@ -1,1 +1,172 @@
+public class Main{ 
+    static class SaldoInsuficienteException
+            extends Exception {
+        public SaldoInsuficienteException(String mensaje) {
+            super(mensaje);
+        }
+    }
+    static class CuentaNoEncontradaException
+            extends Exception {
+        public CuentaNoEncontradaException(String mensaje) {
+            super(mensaje);
+        }
+    }
+    static class SaldoNoCeroException
+            extends Exception {
 
+        public SaldoNoCeroException(String mensaje) {
+            super(mensaje);
+        }
+    }
+    static class CuentaBancaria {
+        private String numeroCuenta;
+        private String titular;
+        private double saldo;
+        public CuentaBancaria(
+                String numeroCuenta,
+                String titular,
+                double saldoInicial) {
+            if (saldoInicial < 0) {
+                throw new IllegalArgumentException(
+                    "El saldo inicial no puede ser negativo."
+                );
+            }
+            this.numeroCuenta = numeroCuenta;
+            this.titular = titular;
+            this.saldo = saldoInicial;
+        }
+        public void depositar(double monto) {
+            if (monto <= 0) {
+                throw new IllegalArgumentException(
+                    "El monto debe ser positivo."
+                );
+            }
+            saldo += monto;
+            System.out.println(
+                "Depósito realizado."
+            );
+        }
+        public void retirar(double monto)
+                throws SaldoInsuficienteException {
+            if (monto <= 0) {
+                throw new IllegalArgumentException(
+                    "El monto debe ser positivo."
+                );
+            }
+            if (monto > saldo) {
+                throw new SaldoInsuficienteException(
+                    "Saldo insuficiente."
+                );
+            }
+            saldo -= monto;
+            System.out.println(
+                "Retiro realizado."
+            );
+        }
+        public void transferir(
+                CuentaBancaria destino,
+                double monto)
+                throws CuentaNoEncontradaException,
+                       SaldoInsuficienteException {
+            if (destino == null) {
+                throw new CuentaNoEncontradaException(
+                    "La cuenta destino no existe."
+                );
+            }
+            if (monto <= 0) {
+                throw new IllegalArgumentException(
+                    "El monto debe ser positivo."
+                );
+            }
+            if (monto > saldo) {
+                throw new SaldoInsuficienteException(
+                    "Saldo insuficiente para la transferencia."
+                );
+            }
+            saldo -= monto;
+            destino.saldo += monto;
+            System.out.println(
+                "Transferencia realizada correctamente."
+            );
+        }
+        public void cerrarCuenta()
+                throws SaldoNoCeroException {
+            if (saldo != 0) {
+                throw new SaldoNoCeroException(
+                    "No se puede cerrar la cuenta porque "
+                    + "tiene saldo."
+                );
+            }
+            System.out.println(
+                "Cuenta cerrada correctamente."
+            );
+        }
+        public double getSaldo() {
+            return saldo;
+        }
+        public String getNumeroCuenta() {
+            return numeroCuenta;
+        }
+        public String getTitular() {
+            return titular;
+        }
+    }
+    public static void main(String[] args) {
+        try {
+            CuentaBancaria cuenta1 =
+                new CuentaBancaria(
+                    "001",
+                    "Leonardo",
+                    1000
+                );
+            CuentaBancaria cuenta2 =
+                new CuentaBancaria(
+                    "002",
+                    "Carlos",
+                    500
+                );
+            System.out.println(
+                "Cuenta 1: " +
+                cuenta1.getTitular() +
+                " - Saldo: S/ " +
+                cuenta1.getSaldo()
+            );
+            System.out.println(
+                "Cuenta 2: " +
+                cuenta2.getTitular() +
+                " - Saldo: S/ " +
+                cuenta2.getSaldo()
+            );
+            cuenta1.transferir(cuenta2, 300);
+            System.out.println(
+                "Saldo cuenta 1: S/ "
+                + cuenta1.getSaldo()
+            );
+            System.out.println(
+                "Saldo cuenta 2: S/ "
+                + cuenta2.getSaldo()
+            );
+            cuenta1.cerrarCuenta();
+        } catch (IllegalArgumentException e) {
+            System.out.println(
+                "Error de validación: "
+                + e.getMessage()
+            );
+        } catch (CuentaNoEncontradaException e) {
+            System.out.println(
+                "Error de cuenta: "
+                + e.getMessage()
+            );
+        } catch (SaldoInsuficienteException e) {
+            System.out.println(
+                "Error de saldo: "
+                + e.getMessage()
+            );
+        } catch (SaldoNoCeroException e) {
+            System.out.println(
+                "Error al cerrar: "
+                + e.getMessage()
+            );
+        }
+    }
+}
